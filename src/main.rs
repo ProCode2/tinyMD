@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::io::Write;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
@@ -6,6 +7,8 @@ fn parse_markdown_file(filename: &str) {
     print_banner();
     println!("[ INFO ] Trying to parse {}...", filename);
     let input_path = Path::new(filename);
+    let mut output_filename = String::from(&filename[..filename.len() - 3]);
+    output_filename.push_str(".html");
 
     let file = File::open(&input_path).expect("[ ERROR ] Failed to open file!");
 
@@ -61,9 +64,17 @@ fn parse_markdown_file(filename: &str) {
         if output_line != "<p></p>\n" {
             tokens.push(output_line);
         }
-    }
 
-    println!("{:?}", input_path)
+        let mut outfile =
+            File::create(&output_filename).expect("[ ERROR ] Could not create output file!");
+
+        for line in &tokens {
+            outfile
+                .write_all(line.as_bytes())
+                .expect("[ ERROR ] Could not write to output file!");
+        }
+    }
+    println!("[ INFO ] Parsing complete!");
 }
 
 fn get_version() -> String {
